@@ -1,18 +1,18 @@
 /*
  Copyright (c) 2014, IMDEA NETWORKS Institute
- 
+
  This file is part of the OpenVLC's source codes.
- 
+
  OpenVLC's source codes are free: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  OpenVLC's source codes are distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with the source codes of OpenVLC.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -63,7 +63,7 @@
 //#define BIT_BUFFER_CONTROL (30)
 #define BIT_BUFFER_CONTROL (51-32)
 // Qing - May 2, 2015
-#define BIT_LED_OR_PD 2 // Choose between PD or LED 
+#define BIT_LED_OR_PD 2 // Choose between PD or LED
 #define BIT_H_POWER_LED (49-32) // For high power LED
 /* Frame format
  * ----------------------------------------------------------------
@@ -79,7 +79,7 @@
 #define MAC_HDR_LEN (OCTET_LEN+2*MAC_ADDR_LEN+PROTOCOL_LEN)
 #define VLC_HLEN (2*MAC_ADDR_LEN+PROTOCOL_LEN)
 //#define MAX_PAYLOAD_LEN 1500
-#define ECC_LEN 16  // 
+#define ECC_LEN 16  //
 #define FRAME_LEN_WO_PAYLOAD \
     (PREAMBLE_LEN+SFD_LEN+MAC_HDR_LEN+ECC_LEN)
 
@@ -96,4 +96,4 @@ struct vlchdr {
 } __attribute__((packed));
 
 
-#endif	/* _LINUX_IF_VLC_H */
+#endif /* _LINUX_IF_VLC_H */
