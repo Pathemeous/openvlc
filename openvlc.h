@@ -46,8 +46,10 @@
 //#define SPI_CS 46 // 32+14 P8_16
 #define SPI_CS 27 // 0+27 P8_17
 
-#define ADDR_BASE_0 0x44e07000
-#define ADDR_BASE_1 0x4804c000
+#define GPIO0_ADDR 0x44e07000
+#define GPIO1_ADDR 0x4804c000
+#define GPIO2_ADDR 0x481ac000
+#define GPIO3_ADDR 0x481ae000
 #define READ_OFFSET 0x138
 #define SET_OFFSET 0x194
 #define CLEAR_OFFSET 0x190

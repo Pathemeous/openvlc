@@ -76,8 +76,7 @@
 MODULE_AUTHOR("Qing WANG");
 MODULE_LICENSE("Dual BSD/GPL");
 
-volatile void *gpio1;
-volatile void *gpio2;
+volatile void *gpio0, *gpio1, *gpio2, *gpio3;
 
 #define MAC 0
 #define APP 1
@@ -477,19 +476,19 @@ static void switch_led_to_rx(void)
 static void switch_tx(void)
 {
 	//if (prev_hpl != hpl) {
-	//writel(1<<bit_led_anode, gpio2+CLEAR_OFFSET);
+	//writel(1<<bit_led_anode, gpio1+CLEAR_OFFSET);
 	//prev_hpl = hpl;
 	//}
 	if (hpl == 1) {
 		bit_led_anode = BIT_H_POWER_LED;                                // High-power LED as TX
 		gpio_direction_output(GPIO_LED_OR_PD, GPIOF_INIT_LOW);          // PD as RX
 		gpio_direction_output(GPIO_LED_ANODE, GPIOF_INIT_LOW);          // PD as RX
-		//writel(1<<BIT_LED_ANODE, gpio2+CLEAR_OFFSET); // Clear the low-power LED
+		//writel(1<<BIT_LED_ANODE, gpio1+CLEAR_OFFSET); // Clear the low-power LED
 	} else {                                                                // LED
 		bit_led_anode = BIT_LED_ANODE;                                  // LED as TX
 		gpio_direction_output(GPIO_LED_OR_PD, GPIOF_INIT_HIGH);         // LED as RX
 		gpio_direction_output(GPIO_H_POWER_LED, GPIOF_INIT_LOW);        // PD as RX
-		//writel(1<<BIT_H_POWER_LED, gpio2+CLEAR_OFFSET); // Clear the HIGH-power LED
+		//writel(1<<BIT_H_POWER_LED, gpio1+CLEAR_OFFSET); // Clear the HIGH-power LED
 	}
 }
 
@@ -513,18 +512,18 @@ static void SPI_write_sfd_and_ch(void)
 	unsigned char shift = 0x10;                     // 0001 1000
 
 	while (shift > 0) {
-		writel(bit_clc, gpio2 + CLEAR_OFFSET);
+		writel(bit_clc, gpio1 + CLEAR_OFFSET);
 		delay_n_NOP();
 		if ((_Bool)(write_byte & shift)) {
-			writel(1 << BIT_MOSI, gpio2 + SET_OFFSET);
+			writel(1 << BIT_MOSI, gpio1 + SET_OFFSET);
 			delay_n_NOP();
 		} else {
-			writel(1 << BIT_MOSI, gpio2 + CLEAR_OFFSET);
+			writel(1 << BIT_MOSI, gpio1 + CLEAR_OFFSET);
 			delay_n_NOP();
 		}
 
 		shift >>= 1;
-		writel(bit_clc, gpio2 + SET_OFFSET);
+		writel(bit_clc, gpio1 + SET_OFFSET);
 	}
 }
 
@@ -534,27 +533,27 @@ static int SPI_read_from_adc(void)
 {
 	unsigned int value = 0, index;
 
-	writel(1 << BIT_CS, gpio1 + CLEAR_OFFSET);
+	writel(1 << BIT_CS, gpio0 + CLEAR_OFFSET);
 	delay_n_NOP();
 	SPI_write_sfd_and_ch();
 	// Skip the first interval
-	writel(bit_clc, gpio2 + CLEAR_OFFSET);
+	writel(bit_clc, gpio1 + CLEAR_OFFSET);
 	delay_n_NOP();
-	writel(bit_clc, gpio2 + SET_OFFSET);
+	writel(bit_clc, gpio1 + SET_OFFSET);
 	delay_n_NOP();
 	// Read the value
 	for (index = 0; index < 11; index++) {
-		writel(bit_clc, gpio2 + CLEAR_OFFSET);
+		writel(bit_clc, gpio1 + CLEAR_OFFSET);
 		delay_n_NOP();
 		value <<= 1;
-		value |= (0x1 & (readl(gpio1 + READ_OFFSET) >> BIT_MISO));
-		writel(bit_clc, gpio2 + SET_OFFSET);
+		value |= (0x1 & (readl(gpio0 + READ_OFFSET) >> BIT_MISO));
+		writel(bit_clc, gpio1 + SET_OFFSET);
 		delay_n_NOP();
 	}
 
-	writel(bit_clc, gpio2 + CLEAR_OFFSET);
+	writel(bit_clc, gpio1 + CLEAR_OFFSET);
 	delay_n_NOP();
-	writel(1 << BIT_CS, gpio1 + SET_OFFSET);
+	writel(1 << BIT_CS, gpio0 + SET_OFFSET);
 	delay_n_NOP();
 
 	return value;
@@ -1478,15 +1477,15 @@ void phy_timer_handler(rtdm_timer_t *timer)
 		if (f_ready_to_tx && (tx_data_curr_index < data_buffer_symbol_len)) {
 			if (data_buffer_symbol[tx_data_curr_index]) {   // Transmit symbol HIGH
 				if (!hpl)
-					writel(1 << BIT_BUFFER_CONTROL, gpio2 + CLEAR_OFFSET);
+					writel(1 << BIT_BUFFER_CONTROL, gpio1 + CLEAR_OFFSET);
 
 				delay_n_NOP();
-				writel(1 << bit_led_anode, gpio2 + SET_OFFSET);
+				writel(1 << bit_led_anode, gpio1 + SET_OFFSET);
 			} else { // Transmit symbol LOW
-				writel(1 << bit_led_anode, gpio2 + CLEAR_OFFSET);
+				writel(1 << bit_led_anode, gpio1 + CLEAR_OFFSET);
 				//gpio_set_value(GPIO_LED_ANODE, GPIOF_INIT_LOW);
 				if (!hpl)
-					writel(1 << BIT_BUFFER_CONTROL, gpio2 + SET_OFFSET);
+					writel(1 << BIT_BUFFER_CONTROL, gpio1 + SET_OFFSET);
 
 				if ((tx_data_curr_index % 2)
 				    && (tx_data_curr_index > 2 * PREAMBLE_LEN_IN_BITS)) {
@@ -1515,7 +1514,7 @@ void phy_timer_handler(rtdm_timer_t *timer)
 				f_wait_for_ack = true;
 				index_ack_timeout = 0;
 				f_received_len = false;
-				writel(1 << bit_led_anode, gpio2 + CLEAR_OFFSET);
+				writel(1 << bit_led_anode, gpio1 + CLEAR_OFFSET);
 				//if (show_msg)
 				//{
 				//if (hpl == 1) {
@@ -1536,14 +1535,14 @@ void phy_timer_handler(rtdm_timer_t *timer)
 			 (tx_ack_curr_index < ack_buffer_symbol_len)) {
 			if (ack_buffer_symbol[tx_ack_curr_index]) {
 				if (!hpl)
-					writel(1 << BIT_BUFFER_CONTROL, gpio2 + CLEAR_OFFSET);
+					writel(1 << BIT_BUFFER_CONTROL, gpio1 + CLEAR_OFFSET);
 
 				delay_n_NOP();
-				writel(1 << bit_led_anode, gpio2 + SET_OFFSET);
+				writel(1 << bit_led_anode, gpio1 + SET_OFFSET);
 			} else {
-				writel(1 << bit_led_anode, gpio2 + CLEAR_OFFSET);
+				writel(1 << bit_led_anode, gpio1 + CLEAR_OFFSET);
 				if (!hpl)
-					writel(1 << BIT_BUFFER_CONTROL, gpio2 + SET_OFFSET);
+					writel(1 << BIT_BUFFER_CONTROL, gpio1 + SET_OFFSET);
 			}
 
 			if (++tx_ack_curr_index >= ack_buffer_symbol_len) {
@@ -1826,8 +1825,10 @@ void vlc_cleanup(void)
 
 	rtdm_timer_destroy(&phy_timer);
 
+	iounmap(gpio0);
 	iounmap(gpio1);
 	iounmap(gpio2);
+	iounmap(gpio3);
 
 	// Clean the GPIOs
 	gpio_free(GPIO_LED_ANODE);
@@ -1972,16 +1973,19 @@ int vlc_init_module(void)
 	//}
 	switch_tx();
 
-	gpio1 = ioremap(ADDR_BASE_0, 4);
-	gpio2 = ioremap(ADDR_BASE_1, 4);
+	gpio0 = ioremap(GPIO0_ADDR, 4);
+	gpio1 = ioremap(GPIO1_ADDR, 4);
+	gpio2 = ioremap(GPIO2_ADDR, 4);
+	gpio3 = ioremap(GPIO3_ADDR, 4);
 
 	phy_state = RX;
 	switch_led_to_rx();
 
-	printk("my_gpio: Access address to device is:0x%x  0x%x\n",
-	       (unsigned int)gpio1, (unsigned int)gpio2);
+	printk("my_gpio: Access address to device is:0x%x  0x%x  0x%x  0x%x\n",
+	       (unsigned int)gpio0, (unsigned int)gpio1,
+	       (unsigned int)gpio2, (unsigned int)gpio3);
 
-	if (!(gpio1 && gpio2))
+	if (!(gpio0 && gpio1 && gpio2 && gpio3))
 		goto out;
 
 	vlc_dir = proc_mkdir("vlc", NULL);
