@@ -71,6 +71,7 @@
 #include <linux/rslib.h>
 
 #include "openvlc.h"
+#include "bbb_gpio.h"
 #define DEVICE_NAME "vlc"
 
 MODULE_AUTHOR("Qing WANG");
