@@ -21,7 +21,6 @@
 #define _LINUX_IF_VLC_H
 
 #include <linux/types.h>
-//#include "reed-solomon.h"
 
 /*  PIN  VALUE
  * --------------------------------------------------------------------
@@ -29,13 +28,10 @@
  *  P8_11 45 | P8_13 23 | P8_15 47 | P8_16 46
  * --------------------------------------------------------------------
  */
-// LED related GPIO settings
 #define GPIO_LED_ANODE 60
 #define GPIO_LED_CATHODE 50
-//#define GPIO_BUFFER_CONTROL 30
 #define GPIO_BUFFER_CONTROL 51
 
-// Qing - May 2, 2015
 #define GPIO_LED_OR_PD 2 // P9_22  Choose between PD and LED
 #define GPIO_H_POWER_LED 49 // P9_23  Output of high power LED
 
@@ -43,20 +39,16 @@
 #define SPI_CLC 45 // 32+13 P8_11
 #define SPI_MISO 23 // 0+23 P8_13
 #define SPI_MOSI 47 // 32+15 P8_15
-//#define SPI_CS 46 // 32+14 P8_16
 #define SPI_CS 27 // 0+27 P8_17
 
 #define BIT_CLC (45-32) // 32+13 P8_11
 #define BIT_MISO (23) // 0+23 P8_13
 #define BIT_MOSI (47-32) // 32+15 P8_15
-//#define BIT_CS (46-32) // 32+14 P8_16
 #define BIT_CS (27) // 0+27 P8_17
 
 #define BIT_LED_ANODE (60-32)
 #define BIT_LED_CATHODE (50-32)
-//#define BIT_BUFFER_CONTROL (30)
 #define BIT_BUFFER_CONTROL (51-32)
-// Qing - May 2, 2015
 #define BIT_LED_OR_PD 2 // Choose between PD or LED
 #define BIT_H_POWER_LED (49-32) // For high power LED
 /* Frame format
@@ -72,14 +64,12 @@
 #define PROTOCOL_LEN 2
 #define MAC_HDR_LEN (OCTET_LEN+2*MAC_ADDR_LEN+PROTOCOL_LEN)
 #define VLC_HLEN (2*MAC_ADDR_LEN+PROTOCOL_LEN)
-//#define MAX_PAYLOAD_LEN 1500
 #define ECC_LEN 16  //
 #define FRAME_LEN_WO_PAYLOAD \
     (PREAMBLE_LEN+SFD_LEN+MAC_HDR_LEN+ECC_LEN)
 
 #define PREAMBLE_LEN_IN_BITS (8*PREAMBLE_LEN)
 
-//
 #define VLC_P_DEFAULT     0x0001          /* Dummy type for vlc frames  */
 
 // This is an vlc frame header.
