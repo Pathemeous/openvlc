@@ -28,29 +28,35 @@
  *  P8_11 45 | P8_13 23 | P8_15 47 | P8_16 46
  * --------------------------------------------------------------------
  */
+
+// See: http://beagleboard.org/static/images/cape-headers.png for pin layout
+// GPIO related settings
+// LED related GPIOs
 #define GPIO_LED_ANODE 60
 #define GPIO_LED_CATHODE 50
 #define GPIO_BUFFER_CONTROL 51
+#define GPIO_LED_OR_PD 2 // P9_22
+#define GPIO_LED_HPL 49 // P9_23
 
-#define GPIO_LED_OR_PD 2 // P9_22  Choose between PD and LED
-#define GPIO_H_POWER_LED 49 // P9_23  Output of high power LED
+#define GPIO_LED_ANODE_BIT (GPIO_LED_ANODE % 32)
+#define GPIO_LED_CATHODE_BIT (GPIO_LED_CATHODE % 32)
+#define GPIO_BUFFER_CONTROL_BIT (GPIO_BUFFER_CONTROL % 32)
+#define GPIO_LED_OR_PD_BIT (GPIO_LED_OR_PD % 32)
+#define GPIO_LED_HPL_BIT (GPIO_LED_HPL % 32)
 
-// SPI related GPIO settings
-#define SPI_CLC 45 // 32+13 P8_11
-#define SPI_MISO 23 // 0+23 P8_13
-#define SPI_MOSI 47 // 32+15 P8_15
-#define SPI_CS 27 // 0+27 P8_17
 
-#define BIT_CLC (45-32) // 32+13 P8_11
-#define BIT_MISO (23) // 0+23 P8_13
-#define BIT_MOSI (47-32) // 32+15 P8_15
-#define BIT_CS (27) // 0+27 P8_17
+// SPI related GPIOs
+#define GPIO_SPI_CLC 45 // P8_11
+#define GPIO_SPI_MISO 23 // P8_13
+#define GPIO_SPI_MOSI 47 // P8_15
+#define GPIO_SPI_CS 27 // P8_17
 
-#define BIT_LED_ANODE (60-32)
-#define BIT_LED_CATHODE (50-32)
-#define BIT_BUFFER_CONTROL (51-32)
-#define BIT_LED_OR_PD 2 // Choose between PD or LED
-#define BIT_H_POWER_LED (49-32) // For high power LED
+#define GPIO_SPI_CLC_BIT (GPIO_SPI_CLC % 32)
+#define GPIO_SPI_MISO_BIT (GPIO_SPI_MISO % 32)
+#define GPIO_SPI_MOSI_BIT (GPIO_SPI_MOSI % 32)
+#define GPIO_SPI_CS_BIT (GPIO_SPI_CS % 32)
+
+
 /* Frame format
  * ----------------------------------------------------------------
  * FIELD | Preamble | SFD | Length | Dst | Src | Protocol | Payload | CRC |

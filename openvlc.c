@@ -139,7 +139,7 @@ module_param(mtu, int, 0);
 //module_param(pd_as_rx, int, 0);
 static int hpl = 0;
 module_param(hpl, int, 0);
-static int bit_led_anode = BIT_LED_ANODE;
+static int bit_led_anode = GPIO_LED_ANODE_BIT;
 
 // May 28, 2015
 struct proc_dir_entry *vlc_dir, *tx_device, *rx_device;
@@ -204,7 +204,7 @@ module_param(adc_ch, int, 0);
 #define RX_FROM_PD 0x01         // channel 1
 static int prev_hpl = 0;
 
-static int bit_clc = 1 << BIT_CLC;
+static int bit_clc = 1 << GPIO_SPI_CLC_BIT;
 
 // April 04
 
@@ -481,15 +481,15 @@ static void switch_tx(void)
 	//prev_hpl = hpl;
 	//}
 	if (hpl == 1) {
-		bit_led_anode = BIT_H_POWER_LED;                                // High-power LED as TX
+		bit_led_anode = GPIO_LED_HPL_BIT;                                // High-power LED as TX
 		gpio_direction_output(GPIO_LED_OR_PD, GPIOF_INIT_LOW);          // PD as RX
 		gpio_direction_output(GPIO_LED_ANODE, GPIOF_INIT_LOW);          // PD as RX
-		//writel(1<<BIT_LED_ANODE, gpio1+CLEAR_OFFSET); // Clear the low-power LED
+		//writel(1<<GPIO_LED_ANODE_BIT, gpio1+CLEAR_OFFSET); // Clear the low-power LED
 	} else {                                                                // LED
-		bit_led_anode = BIT_LED_ANODE;                                  // LED as TX
+		bit_led_anode = GPIO_LED_ANODE_BIT;                                  // LED as TX
 		gpio_direction_output(GPIO_LED_OR_PD, GPIOF_INIT_HIGH);         // LED as RX
-		gpio_direction_output(GPIO_H_POWER_LED, GPIOF_INIT_LOW);        // PD as RX
-		//writel(1<<BIT_H_POWER_LED, gpio1+CLEAR_OFFSET); // Clear the HIGH-power LED
+		gpio_direction_output(GPIO_LED_HPL, GPIOF_INIT_LOW);        // PD as RX
+		//writel(1<<GPIO_LED_HPL_BIT, gpio1+CLEAR_OFFSET); // Clear the HIGH-power LED
 	}
 }
 
@@ -516,10 +516,10 @@ static void SPI_write_sfd_and_ch(void)
 		writel(bit_clc, gpio1 + CLEAR_OFFSET);
 		delay_n_NOP();
 		if ((_Bool)(write_byte & shift)) {
-			writel(1 << BIT_MOSI, gpio1 + SET_OFFSET);
+			writel(1 << GPIO_SPI_MOSI_BIT, gpio1 + SET_OFFSET);
 			delay_n_NOP();
 		} else {
-			writel(1 << BIT_MOSI, gpio1 + CLEAR_OFFSET);
+			writel(1 << GPIO_SPI_MOSI_BIT, gpio1 + CLEAR_OFFSET);
 			delay_n_NOP();
 		}
 
@@ -534,7 +534,7 @@ static int SPI_read_from_adc(void)
 {
 	unsigned int value = 0, index;
 
-	writel(1 << BIT_CS, gpio0 + CLEAR_OFFSET);
+	writel(1 << GPIO_SPI_CS_BIT, gpio0 + CLEAR_OFFSET);
 	delay_n_NOP();
 	SPI_write_sfd_and_ch();
 	// Skip the first interval
@@ -547,14 +547,14 @@ static int SPI_read_from_adc(void)
 		writel(bit_clc, gpio1 + CLEAR_OFFSET);
 		delay_n_NOP();
 		value <<= 1;
-		value |= (0x1 & (readl(gpio0 + READ_OFFSET) >> BIT_MISO));
+		value |= (0x1 & (readl(gpio0 + READ_OFFSET) >> GPIO_SPI_MISO_BIT));
 		writel(bit_clc, gpio1 + SET_OFFSET);
 		delay_n_NOP();
 	}
 
 	writel(bit_clc, gpio1 + CLEAR_OFFSET);
 	delay_n_NOP();
-	writel(1 << BIT_CS, gpio0 + SET_OFFSET);
+	writel(1 << GPIO_SPI_CS_BIT, gpio0 + SET_OFFSET);
 	delay_n_NOP();
 
 	return value;
@@ -1478,7 +1478,7 @@ void phy_timer_handler(rtdm_timer_t *timer)
 		if (f_ready_to_tx && (tx_data_curr_index < data_buffer_symbol_len)) {
 			if (data_buffer_symbol[tx_data_curr_index]) {   // Transmit symbol HIGH
 				if (!hpl)
-					writel(1 << BIT_BUFFER_CONTROL, gpio1 + CLEAR_OFFSET);
+					writel(1 << GPIO_BUFFER_CONTROL_BIT, gpio1 + CLEAR_OFFSET);
 
 				delay_n_NOP();
 				writel(1 << bit_led_anode, gpio1 + SET_OFFSET);
@@ -1486,7 +1486,7 @@ void phy_timer_handler(rtdm_timer_t *timer)
 				writel(1 << bit_led_anode, gpio1 + CLEAR_OFFSET);
 				//gpio_set_value(GPIO_LED_ANODE, GPIOF_INIT_LOW);
 				if (!hpl)
-					writel(1 << BIT_BUFFER_CONTROL, gpio1 + SET_OFFSET);
+					writel(1 << GPIO_BUFFER_CONTROL_BIT, gpio1 + SET_OFFSET);
 
 				if ((tx_data_curr_index % 2)
 				    && (tx_data_curr_index > 2 * PREAMBLE_LEN_IN_BITS)) {
@@ -1536,14 +1536,14 @@ void phy_timer_handler(rtdm_timer_t *timer)
 			 (tx_ack_curr_index < ack_buffer_symbol_len)) {
 			if (ack_buffer_symbol[tx_ack_curr_index]) {
 				if (!hpl)
-					writel(1 << BIT_BUFFER_CONTROL, gpio1 + CLEAR_OFFSET);
+					writel(1 << GPIO_BUFFER_CONTROL_BIT, gpio1 + CLEAR_OFFSET);
 
 				delay_n_NOP();
 				writel(1 << bit_led_anode, gpio1 + SET_OFFSET);
 			} else {
 				writel(1 << bit_led_anode, gpio1 + CLEAR_OFFSET);
 				if (!hpl)
-					writel(1 << BIT_BUFFER_CONTROL, gpio1 + SET_OFFSET);
+					writel(1 << GPIO_BUFFER_CONTROL_BIT, gpio1 + SET_OFFSET);
 			}
 
 			if (++tx_ack_curr_index >= ack_buffer_symbol_len) {
@@ -1835,13 +1835,13 @@ void vlc_cleanup(void)
 	gpio_free(GPIO_LED_ANODE);
 	gpio_free(GPIO_LED_CATHODE);
 	gpio_free(GPIO_BUFFER_CONTROL);
-	gpio_free(GPIO_H_POWER_LED);
+	gpio_free(GPIO_LED_HPL);
 	gpio_free(GPIO_LED_OR_PD);
 
-	gpio_free(SPI_CLC);
-	gpio_free(SPI_MISO);
-	gpio_free(SPI_MOSI);
-	gpio_free(SPI_CS);
+	gpio_free(GPIO_SPI_CLC);
+	gpio_free(GPIO_SPI_MISO);
+	gpio_free(GPIO_SPI_MOSI);
+	gpio_free(GPIO_SPI_CS);
 	//
 
 	// Clean the devices
@@ -1930,7 +1930,7 @@ int vlc_init_module(void)
 	if (gpio_request(GPIO_LED_ANODE, "LED_ANODE")
 	    || gpio_request(GPIO_LED_CATHODE, "LED_CATHODE")
 	    || gpio_request(GPIO_BUFFER_CONTROL, "BUFFER_CONTROL")
-	    || gpio_request(GPIO_H_POWER_LED, "H_POWER_LED")
+	    || gpio_request(GPIO_LED_HPL, "GPIO_LED_HPL")
 	    || gpio_request(GPIO_LED_OR_PD, "LED_OR_PD")
 	    ) {
 		printk("Request GPIO failed!\n");
@@ -1941,23 +1941,23 @@ int vlc_init_module(void)
 	gpio_direction_output(GPIO_LED_ANODE, GPIOF_INIT_LOW);
 	gpio_direction_output(GPIO_LED_CATHODE, GPIOF_INIT_LOW);
 	gpio_direction_output(GPIO_BUFFER_CONTROL, GPIOF_INIT_HIGH);
-	gpio_direction_output(GPIO_H_POWER_LED, GPIOF_INIT_LOW);
+	gpio_direction_output(GPIO_LED_HPL, GPIOF_INIT_LOW);
 	gpio_direction_output(GPIO_LED_OR_PD, GPIOF_INIT_LOW);
 
 	/// GPIOs for SPI
-	if (gpio_request(SPI_CLC, "SPI_CLC")
-	    || gpio_request(SPI_MISO, "SPI_MISO")
-	    || gpio_request(SPI_MOSI, "SPI_MOSI")
-	    || gpio_request(SPI_CS, "SPI_CS")) {
+	if (gpio_request(GPIO_SPI_CLC, "GPIO_SPI_CLC")
+	    || gpio_request(GPIO_SPI_MISO, "GPIO_SPI_MISO")
+	    || gpio_request(GPIO_SPI_MOSI, "GPIO_SPI_MOSI")
+	    || gpio_request(GPIO_SPI_CS, "GPIO_SPI_CS")) {
 		printk("Request GPIO failed!\n");
 		ret = -ENOMEM;
 		goto out;
 	}
 
-	gpio_direction_output(SPI_CLC, GPIOF_INIT_LOW);
-	gpio_direction_input(SPI_MISO);
-	gpio_direction_output(SPI_MOSI, GPIOF_INIT_LOW);
-	gpio_direction_output(SPI_CS, GPIOF_INIT_LOW);
+	gpio_direction_output(GPIO_SPI_CLC, GPIOF_INIT_LOW);
+	gpio_direction_input(GPIO_SPI_MISO);
+	gpio_direction_output(GPIO_SPI_MOSI, GPIOF_INIT_LOW);
+	gpio_direction_output(GPIO_SPI_CS, GPIOF_INIT_LOW);
 
 	// Qing - May 2, 2015
 	//if (pd_as_rx == 1) { // PD
@@ -1966,10 +1966,10 @@ int vlc_init_module(void)
 	//gpio_direction_output(GPIO_LED_OR_PD, GPIOF_INIT_LOW);
 	//}
 	//if (hpl == 1) {
-	//bit_led_anode = BIT_H_POWER_LED; // High-power LED as TX
+	//bit_led_anode = GPIO_LED_HPL_BIT; // High-power LED as TX
 	//gpio_direction_output(GPIO_LED_OR_PD, GPIOF_INIT_LOW); // PD as RX
 	//} else { // LED
-	//bit_led_anode = BIT_LED_ANODE; // LED as TX
+	//bit_led_anode = GPIO_LED_ANODE_BIT; // LED as TX
 	//gpio_direction_output(GPIO_LED_OR_PD, GPIOF_INIT_HIGH); // LED as RX
 	//}
 	switch_tx();
